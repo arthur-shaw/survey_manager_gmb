@@ -108,10 +108,10 @@ numbers_source <- hholds %>%
     # replace missing markers with NA
     # ... for phone numbers
     mutate_at(.vars = hh_phone_vars, 
-        .funs = ~ if_else(str_detect(., "(88[ ]*88[ ]*88[ ]*88|99[ ]*99[ ]*99[ ]*99|[Aa][Uu][Cc][Uu][Nn])") | . == "", NA_character_, .)) %>%
+        .funs = ~ if_else(str_detect(., "^0$") | . == "", NA_character_, .)) %>%
     # ... for names
     mutate_at(.vars = hh_name_vars, 
-        .funs = ~ if_else(str_detect(., "(^0$|999|[Aa][Uu][Cc][Uu][Nn])") | . == "", NA_character_, .) ) %>%
+        .funs = ~ if_else(str_detect(., "^0$") | . == "", NA_character_, .)) %>%
     select(interview__id, !!!hh_phone_vars, !!!hh_name_vars)
 
 numbers_long <- numbers_source %>% 
@@ -160,7 +160,8 @@ numbers_preload <- full_join(names_long, numbers_long, by = c("interview__id", n
         !!number_roster_id := row_number()
     ) %>%
     ungroup() %>%
-    select(interview__id, !!number_roster_id, {{number_var}}, {{number_name_var}}, {{number_type_var}})
+    mutate(number_rel_mem = 1) %>%
+    select(interview__id, !!number_roster_id, {{number_var}}, {{number_name_var}}, {{number_type_var}}, number_rel_mem)
 
 # -----------------------------------------------------------------------------
 # List of numbers - trigger for number roster
