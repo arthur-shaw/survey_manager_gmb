@@ -70,22 +70,22 @@ writeToDisk <- function(path, content) {
 
 dl_wait_screen <- tagList(
 	spin_wave(), 
-	h4("Téléchargement en cours...")
+	h4("Downloading in progress...")
 )
 
 dl_alt_wait_screen <- tagList(
 	spin_wave(), 
-	h4("Faisant une requête auprès du serveur...")	
+	h4("Knock, knock, knockin' on the server's door...")	
 )
 
 auto_sort_wait <- tagList(
 	spin_pong(),
-	h4("Exécutant le programme de rejet....")
+	h4("Playing data quality ping-pong....")
 )
 
 report_wait_screen <- tagList(
 	spin_cube_grid(),
-	h4("Création de rapport en cours...")
+	h4("Creating report...")
 )
 
 ui <- tagList(
@@ -99,149 +99,149 @@ ui <- tagList(
 			value = "setup_tab",
 			icon = icon("cog"),
 				fluidPage(
-  					radioButtons("have_setup", label = h2("Detenez vous déjà un fichier de configuration"),
-    					choices = list("Oui" = 1, "Non" = 2)),
+  					radioButtons("have_setup", label = h2("Does a setup file already exist?"),
+    					choices = list("Yes" = 1, "No" = 2)),
 					conditionalPanel(condition = "input.have_setup == 1", 
-						tags$p("Veuillez charger le ficher de configuration en le retrouvant sur votre ordinateur"),
-						fileInput("setup_file", label = h2("Veuillez sélectionner le fichier de configuration"), accept = ".R")
+						tags$p("Please load the setup file by finding it in your files"),
+						fileInput("setup_file", label = h2("Please select the setup file"), accept = ".R")
 					),
 					conditionalPanel(condition = "input.have_setup == 2",
 						
 						# project folder
-						h2("Dossier du projet"),
-						shinyDirButton("proj_folder", "Parcourir dossiers", "Veuillez choisir un dossier", icon = icon("folder")),
+						h2("Project folder"),
+						shinyDirButton("proj_folder", "Select folders", "Please select a folder", icon = icon("folder")),
 						
 						# Stata
-						h2("Détails concernant Stata"),
-						tags$p("Veuillez sélectionner le fichier d'exécution de Stata et le numéro de version."),
+						h2("Stata details"),
+						tags$p("Please select the Stata installation file and Stata version."),
 						tags$p("These details are needed to execute Stata .do files from this program."),
-						shinyFilesButton("stata_exe", "Choisir Stata.exe", "Veuillez sélectionner un fichier", multiple = FALSE, icon = icon("file-code")),
-						numericInput(inputId = "stata_version", label = "Spécifier le numéro de version de Stata", value = 14, min = 12, max = 16),
+						shinyFilesButton("stata_exe", "Select Stata.exe", "Please select a file", multiple = FALSE, icon = icon("file-code")),
+						numericInput(inputId = "stata_version", label = "Specify Stata version", value = 14, min = 12, max = 16),
 						
 						# SuSo connection
-						h2("Détails du serveur SuSo"),
+						h2("SuSo server details"),
 						
-						h3("Identifiants de connexion"),
+						h3("Credentials"),
 						textInput(inputId = "site", label = "Site"),
-						textInput(inputId = "user", label = "Nom d'utilisateur"),
-						textInput(inputId = "password", label = "Mot de passe"),
+						textInput(inputId = "user", label = "User name"),
+						textInput(inputId = "password", label = "Password"),
 
 						h3("Questionnaires"),
-						tags$p("Spécifier le nom ou le motif regex pour identifier le(s) questionnaire(s) du type indiqué."),
-						textInput(inputId = "hhold_pattern", label = "Ménage"),
-						textInput(inputId = "attempt_list", label = "Liste de tentatives", value = "tentative_appel", placeholder = "Nom de variable sur Designer"),
-						textInput(inputId = "interview_result", label = "Résultat de l'entretien", value = "result", placeholder = "Nom de variable sur Designer"),
-						textInput(inputId = "interview_continue", label = "Possible de rejoindre le répondant / terminer l'entretien avec une autre tentative d'appel", value = "possibleJoindre_Rep", placeholder = "Nom de variable sur Designer"),
-						textInput(inputId = "attempt_time", label = "Résultat de l'entretien", value = "heure_debut", placeholder = "Nom de variable sur Designer"),
-						textInput(inputId = "answered_var", label = "Résultat de l'entretien", value = "reponse", placeholder = "Nom de variable sur Designer"),
-						textInput(inputId = "talk_var", label = "Résultat de l'entretien", value = "parle_avec_membre", placeholder = "Nom de variable sur Designer"),
-						textInput(inputId = "consent", label = "Résultat de l'entretien", value = "consentement", placeholder = "Nom de variable sur Designer"),											
-						textInput(inputId = "call_back_pattern", label = "Entretien de rappel"),
-						textInput(inputId = "mystery_pattern", label = "Entretien de répondant secret"),
+						tags$p("Specify name or regex pattern to identify questionnaire(s) of type indicated."),
+						textInput(inputId = "hhold_pattern", label = "Household app", placeholder = "Designer app name/regex"),
+						textInput(inputId = "attempt_list", label = "Attempt list", value = "attempt_list", placeholder = "Designer variable name"),
+						textInput(inputId = "interview_result", label = "Interview result", value = "interview_result", placeholder = "Designer variable name"),
+						textInput(inputId = "interview_continue", label = "Possible to continue (finish) the interview", value = "reach_later", placeholder = "Designer variable name"),
+						textInput(inputId = "attempt_time", label = "Call attempt time", value = "start_time", placeholder = "Designer variable name"),
+						textInput(inputId = "answered_var", label = "Whether anyone answer", value = "any_answer", placeholder = "Designer variable name"),
+						textInput(inputId = "talk_var", label = "Whether spoke with a member", value = "speak_w_member", placeholder = "Designer variable name"),
+						textInput(inputId = "consent", label = "Whether consented", value = "consent", placeholder = "Designer variable name"),											
+						textInput(inputId = "call_back_pattern", label = "Call back app", placeholder = "Designer app name/regex"),
+						textInput(inputId = "mystery_pattern", label = "Mystery respondent app", placeholder = "Designer app name/regex"),
 
 						# Preload file details
-						h3("Détails sur les fichiers de préchargement"),
-						tags$p("Indiquer le nom du fichier. Inclure l'extension"),
-						textInput(inputId = "sample_preload_file", label = "Échantillon", placeholder = "Format Stata"),
-						textInput(inputId = "sample_preload_id", label = "ID ménage dans la base échantillon"),
-						textInput(inputId = "hhold_preload_file", label = "Ménage", placeholder = "Format Stata"),
-						textInput(inputId = "hhold_preload_id", label = "ID ménage dans la base ménage"),
-						textInput(inputId = "member_preload_file", label = "Membres", placeholder = "Format Stata"),
-						textInput(inputId = "member_preload_id", label = "ID ménage dans la base membre"),
-						textInput(inputId = "int_lang_file", label = "Enquêteurs et langues parlées.", placeholder = "Format Excel"),
+						h3("Preload data details"),
+						tags$p("Record input file names with extension."),
+						textInput(inputId = "sample_preload_file", label = "Sample", value = "SampleFINAL.dta", placeholder = "Stata file"),
+						textInput(inputId = "sample_preload_id", label = "Household ID in the sample file", value = "hhid", placeholder = "Variable name"),
+						textInput(inputId = "hhold_preload_file", label = "Household", value = "LFS_Final.dta", placeholder = "Stata file"),
+						textInput(inputId = "hhold_preload_id", label = "Household ID in the household file", value = "hhid", placeholder = "Variable name"),
+						textInput(inputId = "member_preload_file", label = "Membres", value = "LFS_Final.dta", placeholder = "Stata file"),
+						textInput(inputId = "member_preload_id", label = "Household ID in the member file", value = "hhid", placeholder = "Variable name"),
+						textInput(inputId = "int_lang_file", label = "Interviewers and languages spoken", value = "interviewer_languages.xlsx", placeholder = "Stata file"),
 
 						# Main data files
-						h2("Détails sur les données exportées"),
-						tags$p("Nom de base. Veuillez inclure l'extension .dta dans le nom."), 
-						textInput(inputId = "hhold_file", label = "Ménage", value = "COVID_19_Mali.dta"),
-						textInput(inputId = "attempt_file", label = "Tentative d'appel", value = "tentatives.dta"),
-						textInput(inputId = "number_file", label = "Numéros de téléphone", value = "numeros.dta"),
-						textInput(inputId = "member_file", label = "Membres du ménage", value = "membres.dta"),
+						h2("Export data"),
+						tags$p("File name. Please include the .dta extension in the name."), 
+						textInput(inputId = "hhold_file", label = "Household", value = "GAMBIA_COVID_19.dta"),
+						textInput(inputId = "attempt_file", label = "Call attempts", value = "attempts.dta"),
+						textInput(inputId = "number_file", label = "Phone numbers", value = "numbers.dta"),
+						textInput(inputId = "member_file", label = "Household members", value = "hhroster.dta"),
 
-						h2("Détails sur le programme de rejet"),
-						h3("Status de Survey Solutions"),
-						selectInput(inputId = "suso_status", label = "Status des entretiens à passer en revue", 
+						h2("Auto-sort details"),
+						h3("Survey Solutions status"),
+						selectInput(inputId = "suso_status", label = "Status(es) of interview to process", 
 							choices = c("Completed", "ApprovedBySupervisor"), 
 							selected = c("Completed", "ApprovedBySupervisor"), multiple = TRUE, selectize = TRUE),
 						h3("Statut indiqué par l'entretien"),
-						textInput(inputId = "data_status", label = "Expression Stata décrivant les entretiens à valider", 
-							"inlist(result, 1, 3)"),
+						textInput(inputId = "data_status", label = "Stata condition describing interviews to process", 
+							"inlist(result, 1, 2, 5, 6, 7)"),
 
-						h2("Période de collecte"),
+						h2("Data collection period"),
 						dateRangeInput("survey_dates", label = "Survey period"),						
 
 						# write parameters to file
-						h3("Sauvegarder le fichier de configuration"),
-						actionButton(inputId = "writeParams", label = "Sauvegarder", icon = icon("save"))	
+						h3("Save setup file"),
+						actionButton(inputId = "writeParams", label = "Save parameters", icon = icon("save"))	
 
 					),
-					h2("Charger le fichier de configuration"),
-					actionButton("setup_load", label = "Charger", icon = icon("play-circle"))
+					h2("Load setup file"),
+					actionButton("setup_load", label = "Load file", icon = icon("play-circle"))
 
 				)
 
 		), 
 		tabPanel(
-			title = "Télécharger",
+			title = "Download",
 			value = "get_data",
 			icon = icon("file-download"),
-			h2("Composition des équipes de collecte"),
-			actionButton("get_teams_data", label = "Télécharger", icon = icon("users")),
+			h2("Team composition"),
+			actionButton("get_teams_data", label = "Download", icon = icon("users")),
 			h2("Ménage"),
-			actionButton("get_hhold_data", label = "Télécharger", icon = icon("home")),
-			actionButton("check_hhold_data", label = "Vérifier", icon = icon("check-square")),
-			actionButton("use_hhold_data", label = "Utiliser ces fichiers", icon = icon("play-circle")),
+			actionButton("get_hhold_data", label = "Download", icon = icon("home")),
+			actionButton("check_hhold_data", label = "Check file dates", icon = icon("check-square")),
+			actionButton("use_hhold_data", label = "Use these data", icon = icon("play-circle")),
 			verbatimTextOutput("hhold_data_found"),
-			h2("Enregistrements sonores"),
-			actionButton("get_audio", label = "Télécharger", icon = icon("file-audio")),
-			actionButton("check_audio_data", label = "Vérifier", icon = icon("check-square")),
-			actionButton("use_audio_data", label = "Utiliser ces fichiers", icon = icon("play-circle")),
+			h2("Audio"),
+			actionButton("get_audio", label = "Download", icon = icon("file-audio")),
+			actionButton("check_audio_data", label = "Check file dates", icon = icon("check-square")),
+			actionButton("use_audio_data", label = "Use these data", icon = icon("play-circle")),
 			verbatimTextOutput("audio_files_found"),
 		),
-		navbarMenu("Affecter", icon = icon("exchange-alt"),
-			tabPanel("Ménage", icon = icon("home"), value = "assign_hholds",
+		navbarMenu("Assign", icon = icon("exchange-alt"),
+			tabPanel("Household", icon = icon("home"), value = "assign_hholds",
 				rHandsontableOutput("allocation"),
-				actionButton("make_hhold_assign", label = "Créer affectations", icon = icon("play-circle"))
+				actionButton("make_hhold_assign", label = "Make assignments", icon = icon("play-circle"))
 			),
-			tabPanel("Entretien de rappel", icon = icon("phone-square"), value = "assign_call_back",
-				tags$p("A VENIR PROCHAINEMENT")		
+			tabPanel("Call back", icon = icon("phone-square"), value = "assign_call_back",
+				tags$p("COMING SOON")		
 			),
-			tabPanel("Répondant secret", icon = icon("user-secret"), value = "assign_mystery",
-				tags$p("A VENIR PROCHAINEMENT")
+			tabPanel("Mystery assignment", icon = icon("user-secret"), value = "assign_mystery",
+				tags$p("COMING SOON")
 			)		
 		),
-		navbarMenu("Agir", icon = icon("tasks"), 
-			tabPanel("Approuver/rejeter", icon = icon("laptop-code"), value = "action_auto_sort",
-				h2("Exécuter"),
-				checkboxInput("autosort_acts", label = "Approuver/rejeter lors de l'exécution", value = FALSE),
-				actionButton("run_autosort", label = "Exécuter", icon = icon("code")), 
-				h2("Créer un rapport"),
-				tags$p("NB: Ce bouton ne marche pas encore"),
-				actionButton("make_autosort_report", label = "Créer", icon = icon("chart-bar"))
+		navbarMenu("Act", icon = icon("tasks"), 
+			tabPanel("Approve/reject", icon = icon("laptop-code"), value = "action_auto_sort",
+				h2("Run auto-sort"),
+				checkboxInput("autosort_acts", label = "Approve/reject when run", value = FALSE),
+				actionButton("run_autosort", label = "Run", icon = icon("code")), 
+				h2("Create auto-sort report"),
+				tags$p("NOTE: This button doesn't work yet"),
+				actionButton("make_autosort_report", label = "Create", icon = icon("chart-bar"))
 			),
-			tabPanel("Surveiller", icon = icon("table"), value = "action_fcheck",
+			tabPanel("Monitor", icon = icon("table"), value = "action_fcheck",
 				conditionalPanel(condition = "output.got_teams == 1",
-					h2("Paramètres du rapport"),
-					dateRangeInput("fcheck_dates", label = "Période", start = (Sys.Date() - 7)),
+					h2("Report parameters"),
+					dateRangeInput("fcheck_dates", label = "Report period", start = (Sys.Date() - 7)),
 					# TODO: require `interviewer` df to exist
-					selectInput("fcheck_group_var", label = "Niveau d'agrégation", 
+					selectInput("fcheck_group_var", label = "Reporting level", 
 						choices = c("team"), 
 						multiple = FALSE),
-					selectInput("fcheck_teams", label = "Équipe(s)", 
+					selectInput("fcheck_teams", label = "Team(s)", 
 						choices =  "",
 							# c("All teams", "team 1", "team 2", "team 3"),
 						selected = "All teams",
 						multiple = TRUE,
 						selectize = TRUE),
 					h2("Créer rapport"),
-					actionButton("make_fieldcheck_report", label = "Créer", icon = icon("table"))
+					actionButton("make_fieldcheck_report", label = "Create", icon = icon("table"))
 				),
 				conditionalPanel(condition = "output.got_teams == 2",
-					tags$p("Besoin de télécharger la compostion des équipes de collectes avant créer le rapport")
+					tags$p("Need to request team compition data before the report can be run")
 				)
 			),
-			tabPanel("Écouter", icon = icon("headphones"), value = "action_listen",
-				tags$p("A VENIR PROCHAINEMENT")
+			tabPanel("Listen", icon = icon("headphones"), value = "action_listen",
+				tags$p("COMING SOON")
 			)
 
 		)
@@ -625,50 +625,6 @@ server <- function(input, output, session) {
 		waiter_show(html = dl_alt_wait_screen)
 		source(paste0(progsDir, "get_sync_data.R")) # TODO: make this a common component outside of cluster report prog dir
 		waiter_hide()
-	})
-
-	# get community data from SuSo
-	observeEvent(input$get_comm_data, {
-
-		waiter_show(html = dl_wait_screen)
-
-		# get data
-		source(paste0(progsDir, "get_comm_data.R"))
-	
-		# append data
-		stata(src = paste0(progsDir, "append_community.do"))
-
-		waiter_hide()
-
-	})
-
-	# get education data from SuSo
-	observeEvent(input$get_educ_data, {
-
-		waiter_show(html = dl_wait_screen)
-
-		# get data
-		source(paste0(progsDir, "get_educ_data.R"))
-
-		# append data
-		stata(src = paste0(progsDir, "append_education.do"))
-		
-		waiter_hide()
-
-	})
-
-	# get education data from SuSo
-	observeEvent(input$get_health_data, {
-
-		waiter_show(html = dl_wait_screen)
-
-		source(paste0(progsDir, "get_health_data.R"))
-
-		# append data
-		stata(src = paste0(progsDir, "append_health.do"))
-		
-		waiter_hide()
-
 	})
 
 	# get all data

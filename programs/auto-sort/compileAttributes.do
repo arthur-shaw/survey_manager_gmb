@@ -57,38 +57,38 @@ CREATE ATTRIBUTES
 Call attempts
 -----------------------------------------------------------------------------*/
 
-use "`rawDir'/tentatives.dta", clear
+use "`rawDir'/attempts.dta", clear
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 number call atempts made
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 createAttribute using "`attributesPath'", ///
-	countWhere(!mi(tentatives__id) & !mi(numero_appele)) ///
+	countWhere(!mi(attempts__id) & !mi(number_called)) ///
 	byGroup(interview__id interview__key) ///
 	attribName(num_attempts) ///
-	attribVars(tentatives__id)
+	attribVars(attempts__id)
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 number of numbers tried
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-use "`rawDir'/tentatives.dta", clear
+use "`rawDir'/attempts.dta", clear
 
-drop if mi(numero_appele)
-duplicates drop interview__id interview__key numero_appele, force
+drop if mi(number_called)
+duplicates drop interview__id interview__key number_called, force
 
 createAttribute using "`attributesPath'", ///
-	countWhere(!mi(numero_appele)) ///
+	countWhere(!mi(number_called)) ///
 	byGroup(interview__id interview__key) ///
 	attribName(num_numbers_tried) ///
-	attribVars(numero_appele)
+	attribVars(number_called)
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 member ever answered
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-use "`rawDir'/tentatives.dta", clear
+use "`rawDir'/attempts.dta", clear
 
 createAttribute using "`attributesPath'", ///
 	anyWhere(`talk_var' == 1) ///
@@ -111,12 +111,12 @@ createAttribute using "`attributesPath'", ///
 		( ///
 			`answered_var' == 1 & /// answered
 			`talk_var' == 2  /// but not member
-			& inlist(contact_menage, 1, 2) /// and do not know household or won't visit them
+			& inlist(get_hh_contact, 1, 2) /// and do not know household or won't visit them
 		) ///
 		) ///
 	byGroup(interview__id interview__key) ///
 	attribName(num_attempts_noreach) ///
-	attribVars(`answered_var'|`talk_var'|contact_menage)
+	attribVars(`answered_var'|`talk_var'|get_hh_contact)
 
 /*-----------------------------------------------------------------------------
 Numbers
@@ -129,10 +129,10 @@ number of numbers
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 createAttribute using "`attributesPath'", ///
-	countWhere(!mi(numeros__id)) ///
+	countWhere(!mi(numbers__id)) ///
 	byGroup(interview__id interview__key) ///
 	attribName(num_numbers_provided) ///
-	attribVars(numeros_liste)
+	attribVars(number_list)
 
 * TODO: don't count preferred number in issues
 * so numbers attempted could be >= numbers provided if subtract preferred number that may or may not have been used
@@ -147,7 +147,7 @@ createAttribute using "`attributesPath'", ///
 	anyWhere(new_number == 1) ///
 	byGroup(interview__id interview__key) ///
 	attribName(number_added) ///
-	attribVars(numeros_liste)
+	attribVars(number_list)
 
 /*-----------------------------------------------------------------------------
 Household
@@ -188,7 +188,7 @@ createAttribute using "`attributesPath'", ///
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 employment
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
+/* 
 * respondent works in hhold enterprise
 createAttribute using "`attributesPath'", ///
 	genAttrib(s06q05 == 2) /// TODO: see whether agree to include 1, although creates LOTS of cases
@@ -211,12 +211,12 @@ createAttribute using "`attributesPath'", ///
 createAttribute using "`attributesPath'", ///
 	genAttrib(s06q14 == 1) ///
 	attribName(work_ag_hh) ///
-	attribVars(s06q14)
-
+	attribVars(s06q14) 
+*/
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 income
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
+/* 
 * hhold enterprise is income source
 createAttribute using "`attributesPath'", ///
 	genAttrib(s08q01__2 == 1) ///
@@ -228,7 +228,7 @@ createAttribute using "`attributesPath'", ///
 	genAttrib(s08q01__1 == 1) ///
 	attribName(income_ag) ///
 	attribVars(s08q01)
-
+*/
 /*-----------------------------------------------------------------------------
 Member
 -----------------------------------------------------------------------------*/

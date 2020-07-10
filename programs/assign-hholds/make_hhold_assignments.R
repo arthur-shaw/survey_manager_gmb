@@ -79,28 +79,62 @@ if (!exists("data_entered")) {
 print("ending...")
 
 # household sample
-hholds_sampled <- haven::read_dta(
-    file = paste0(assign_data_dir, sample_preload_file)) %>%
-    select(!!sym(sample_preload_id))
+hholds_sampled <- haven::read_dta(file = paste0(assign_data_dir, sample_preload_file)) %>%
+    mutate(hhid = paste0(
+        str_pad(hh1, width = 3, side = "left", pad = "0"),
+        str_pad(hh2, width = 2, side = "left", pad = "0"))
+    ) %>%
+    select(hhid)
 
-hhold_size <- haven::read_dta(
-    file = paste0(assign_data_dir, member_preload_file)) %>%
-    group_by(!!sym(member_preload_id)) %>%
+# split file into hhold and member pieces
+# ... hhold file
+hholds <- data %>%
+    mutate(
+        language = case_when(
+            hl11 == 1 ~ 2, # Mandingka/Jahanka -> MANDINKA
+            hl11 == 2 ~ 4, # Fula/Tukulur/Loroba -> FULA
+            hl11 == 3 ~ 3, # Wolof -> WOLLOF
+            hl11 == 4 ~ 5, # Jola/Karoninka -> JOLA
+            hl11 == 5 ~ 6, # Sarahule -> SARAHULE
+            hl11 == 6 ~ 7, # Serere -> SERERE
+            hl11 == 7 ~ 9, # Creole/Aku/Marabout -> CREOLE/ AKU MARABOUT
+            hl11 == 8 ~ 8, # Manjako -> MANJAGO
+            hl11 == 9 ~ 10, # Bambara -> BAMBARA
+            hl11 == 96 ~ 1), # Other -> ENGLISH (FOR NOW)
+        dteasg = format(Sys.Date(), "%b-%m"),
+        hh5_1_2 = hh5_1
+    ) %>%
+    filter(hl3 == 1) %>%
+    select(
+        hhid, hh7, hh8, hh1, hh2,   # hhold identifiers: area, LGA, cluster, household number
+        hh5_1, hh5_2_1, hh5_2_2,    # contacts: head name and phone contacts
+        hh5_1_2,                    # duplicate head name
+        dteasg, language
+        # strata - TODO: create        
+    )
+
+# ... member file
+members <- data %>%
+    select(
+        hhid, hh7, hh8, hh1, hh2, # hhold identifiers: area, LGA, cluster, household number
+        hl1, uid,  # ID
+        hl2,    # name
+        hl4,    # gender
+        hl6,    # age
+        hl3     # relationship
+    )
+
+# compute household size
+hhold_size <- members
+    group_by(hhid) %>%
     summarize(hhsize = n()) %>%
     ungroup() %>%
-    select(!!sym(member_preload_id), hhsize)
+    select(hhid, hhsize)
 
-hholds <- haven::read_dta(
-    file = paste0(assign_data_dir, hhold_preload_file)) %>%
-    mutate(
-        # hhsize = rowSums(select(., starts_with("NOM_PRENOMS__"))),
-        has_hh_contacts = (!is.na(s00q12) | !is.na(s00q14))
-    ) %>%
-    left_join(hhold_size, by = hhold_preload_id) %>%
-    semi_join(hholds_sampled, by = hhold_preload_id)
-
-members <- haven::read_dta(
-    file = paste0(assign_data_dir, member_preload_file))
+# create final hhold file by adding size and filtering to sampled hholds
+hholds <- hholds %>%
+    left_join(hhold_size, by = "hhid") %>%
+    semi_join(hholds_sampled, by = "hhid")
 
 # households already assigned
 # if no assignments made, create an empty file
@@ -179,53 +213,52 @@ out_hhold_preload_file <- str_replace(hhold_file, "\\.dta$", "\\.tab")
 out_number_preload_file <- str_replace(number_file, "\\.dta$", "\\.tab")
 out_member_preload_file <- str_replace(member_file, "\\.dta$", "\\.tab")
 
+# TODO: redo for Gambia
+
 # define how phone numbers should be changed to number types
 mutates <- quos(
-    source_var %in% c("s00q10", "s00q12") ~ 1,
-    source_var %in% c("s00q13", "s00q14") ~ 1,
-    source_var %in% c("s00q15", "s00q16") ~ 2,
-    source_var %in% c("s00q17", "s00q18") ~ 2    
+    source_var %in% c("hh5_1", "hh5_2_1") ~ 1,
+    source_var %in% c("hh5_2_1", "hh5_2_2") ~ 1 
 )
 
 # identify number groups for purposes of merging numbers and names in reshape
 num_group_mutates <- quos(
-    source_var %in% c("s00q10", "s00q12") ~ 1,
-    source_var %in% c("s00q13", "s00q14") ~ 2,
-    source_var %in% c("s00q15", "s00q16") ~ 3,
-    source_var %in% c("s00q17", "s00q18") ~ 4    
+    source_var %in% c("hh5_1", "hh5_2_1") ~ 1,
+    source_var %in% c("hh5_2_1", "hh5_2_2") ~ 1  
 )
 
 # create preload assignments
 create_preload(
     df_hhold = hholds, 
     hhold_id = hhid, 
-    hhold_mutate = quos(chef_nom = s00q10),
+    hhold_mutate = quos(head_name = hh5_1),
     hhold_rename = c(
         "hhid" = "hhid", 
-        "region" = "s00q01", 
-        "strate" = "strate",
-        "langue" = "s00q28"),
-    hh_phone_vars = vars(s00q12, s00q14, s00q16, s00q18),
-    hh_name_vars = vars(s00q10, s00q13, s00q15, s00q17),
+        "lga" = "hh8",
+        "sector" = "hh7",
+        "language" = "language",
+        "dteasg" = "dteasg"),
+    hh_phone_vars = vars(hh5_2_1, hh5_2_2),
+    hh_name_vars = vars(hh5_1, hh5_1_2),
     number_mutate = mutates,
     num_group_mutate = num_group_mutates,
     number_type_var = numero_membre,
-    number_var = numeros_liste,
+    number_var = number_list,
     name_mutate = mutates,
-    number_name_var = numero_appartient_txt,
+    number_name_var = number_owner_txt,
     df_member = members, 
-    mem_indiv_id = s01q00a,
+    mem_indiv_id = uid,
     mem_mutate = quos(
-        preload_pid = s01q00a, 
-        s02q01_open = s01q00b, 
-        preload_sex = s01q01, 
-        preload_age = AgeAnnee, 
-        preload_relation = s01q02,
-        s02q07 = s01q02,    # relationship to head
-        s02q06 = AgeAnnee,  # age
-        s02q05 = s01q01,    # gender
-        s02q01 = s01q00b),  # name
-    mem_name = s02q01,
+        preload_pid = uid, 
+        s02q01_open = hl2, 
+        preload_sex = hl4, 
+        preload_age = hl6, 
+        preload_relation = hl3,
+        s02q07 = hl3,    # relationship to head
+        s02q06 = hl6,  # age
+        s02q05 = hl4,    # gender
+        s02q01 = hl2),  # name
+    mem_name = s2q1,
     df_assignments = new_assignments, 
     assign_rename = c(
         "hhid" = "hhid", 

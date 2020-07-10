@@ -67,9 +67,9 @@ local suffixes "no_answer invalid_number unreachable"
 #delim;
 
 local descs `"
-"aucune réponse"
-"numéro invalide"
-"téléphone fermé/injoignable"
+"no answer"
+"number invalid"
+"phone off/unreachable"
 "';
 
 #delim cr
@@ -81,11 +81,11 @@ forvalues i = 1/`nitems' {
 	local suffix: word `i' of `suffixes'
 	local desc: word `i' of `descs'
 
-	local resultProbComm = "ERREUR: Le résultat d'entretien est en conflit avec les tentatives d'appel. " + ///
-		"Le résultat est `desc', mais dans les tentatives " + ///
-		"d'appel, on a réussi à joindre quelqu'un"	
+	local resultProbComm = "ERROR: the interview result conflicts with the call attempt details. " + ///
+		"The result is `desc', but in the call attempts, " + ///
+		"one successfully reached someone."	
 
-	local descTxt = "résultat " + "`desc' " + "mais a pu joindre"
+	local descTxt = "result " + "`desc' " + "but able to reach"
 
 	createComplexIssue , ///
 		attributesFile(`attributesPath') ///
@@ -107,12 +107,12 @@ forvalues i = 1/`nitems' {
 	local suffix: word `i' of `suffixes'
 	local desc: word `i' of `descs'
 
-	local continueComm = "ERREUR: Le résultat d'entretien est `desc', " + ///
-		"mais il a y a des numéro qui n'ont pas été essayé ou il est autrement " + ///
-		"possible de continuer l'entretien selon le bilan de l'entretien. " + ///
-		"Veuillez essayer encore de joindre le ménage par tous les moyens possibles."
+	local continueComm = "ERROR: the interview result is `desc', " + ///
+		"but there are numbers that have not been tried or it is otherwise " + ///
+		"possible de continue the interview according to the interview result. " + ///
+		"Please try to reach the household by all means possibles."
 
-	local descTxt = "Résultat " + "`desc' " + "mais peut continuer"
+	local descTxt = "Result " + "`desc' " + "but can continue"
 
 	createComplexIssue , ///
 		attributesFile(`attributesPath') ///
@@ -133,9 +133,9 @@ forvalues i = 1/`nitems' {
 partially complete but possible to complete
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-local continueComm2 = "ERREUR: Le résultat de l'entretien est partialement achevé, " + ///
-	"mais l'on indique qu'il est néanmoins possible de continuer l'entretien. " + ///
-	"Veuillez essayer de terminer l'entretien ou corriger le résultat."
+local continueComm2 = "ERROR: the interview result is partially completed, " + ///
+	"but that section also says that it may be possible to continue the interview . " + ///
+	"Please try to complete the interview or correct the interview result."
 
 createComplexIssue , ///
 	attributesFile(`attributesPath') ///
@@ -143,15 +143,15 @@ createComplexIssue , ///
 	whichAttributes(result_partial num_numbers_provided num_numbers_tried can_continue) ///
 	issueCondit(result_partial == 1 & can_continue == 1) ///
 	issueType(1) ///
-	issueDesc("Entretien à moitié achevé, mais possible d'achever") ///
+	issueDesc("Partially complete interview, but possible to complete") ///
 	issueComm("`continueComm2'")
 
 /*-----------------------------------------------------------------------------
 Income-generating activities
 -----------------------------------------------------------------------------*/
-
+/* 
 * respondent works in NFE, but no hhold NFE reported
-local bizComm = "ERREUR: Le répondant travaille dans une entreprise familiale, " + ///
+local bizComm = "ERROR: Le répondant travaille dans une entreprise familiale, " + ///
 	"mais aucune entreprise familiale n'est déclarée. " + ///
 	"Veuillez vérifier l'activité du répondant et l'activité des membres du ménage dans la section 5."
 
@@ -165,7 +165,7 @@ createComplexIssue , ///
 	issueComm("`bizComm'")
 
 * respondent works in family ag, but no family ag reported
-local agComm = "ERREUR: Le répondant travaille dans une l'agriculture ou l'élevage familial, " + ///
+local agComm = "ERROR: Le répondant travaille dans une l'agriculture ou l'élevage familial, " + ///
 	"mais activité agricule n'est déclarée. " + ///
 	"Veuillez vérifier l'activité du répondant et l'activité des membres du ménage dans la section 5."
 
@@ -179,7 +179,7 @@ createComplexIssue , ///
 	issueComm("`agComm'")
 
 * family ag is income source, but no family ag reported
-local agComm = "ERREUR: Le ménage tire une partie de son revenu de l'agriculture familiale, " + ///
+local agComm = "ERROR: Le ménage tire une partie de son revenu de l'agriculture familiale, " + ///
 	"mais aucune activité agricole n'est déclarée. " + ///
 	"Veuillez vérifier les sources de revenu dans la section 8 " + ///
 	"et les activités dans la section 5."
@@ -194,7 +194,7 @@ createComplexIssue , ///
 	issueComm("`agComm'")
 
 * NFE is income source, but no NFE reported
-local bizComm = "ERREUR: Le ménage exploite une entreprise familiale depuis le début de la crise " + ///
+local bizComm = "ERROR: Le ménage exploite une entreprise familiale depuis le début de la crise " + ///
 	"mais ne déclare pas cette entreprise comme source de revenu. " + ///
 	"Veuillez vérifier les activités dans la section 5" + ///
 	"et les sources de revenu dans la section 8."
@@ -206,15 +206,15 @@ createComplexIssue , ///
 	issueCondit(result_complete == 1 & work_biz_hh == 1 & income_biz == 0) ///
 	issueType(1) ///
 	issueDesc("Ménage subsiste de l'activité commerciale, mais aucune entreprise déclarée") ///
-	issueComm("`bizComm'")
-
+	issueComm("`bizComm'") 
+*/
 /*-----------------------------------------------------------------------------
 Members
 -----------------------------------------------------------------------------*/
 
 * more than 1 head
-local moreHeadComm = "ERREUR: Il y a plus d'un chef de ménage. " + ///
-	"Confirmer le lien de parenté de tous les membres marqués comme chef."
+local moreHeadComm = "ERROR: There is more than 1 household head. " + ///
+	"Check the relationship of all members marked as head."
 
 createComplexIssue , ///
 	attributesFile(`attributesPath') ///
@@ -222,12 +222,12 @@ createComplexIssue , ///
 	whichAttributes(num_heads result_complete) ///
 	issueCondit(result_complete == 1 & num_heads > 1) ///
 	issueType(1) ///
-	issueDesc("plus d'un CM") ///
+	issueDesc("More than 1 head") ///
 	issueComm("`moreHeadComm'")
 
 * no head
-local noHeadComm = "ERREUR: Aucun chef de ménage. " + ///
-	"Confirmer le lien de parenté de tous les membres."
+local noHeadComm = "ERROR: NO household head. " + ///
+	"Check the relationship of all members."
 
 createComplexIssue , ///
 	attributesFile(`attributesPath') ///
@@ -235,23 +235,13 @@ createComplexIssue , ///
 	whichAttributes(num_heads result_complete) ///
 	issueCondit(result_complete == 1 & num_heads == 0) ///
 	issueType(1) ///
-	issueDesc("Aucun CM") ///
+	issueDesc("No head") ///
 	issueComm("noHeadComm")
 
-use "`rawDir'/membres.dta", clear
-
-createSimpleIssue using "`issuesPath'", ///
-	flagWhere(membres__id == 1) ///
-	issueType(2) ///
-	issueDesc("Test commment") ///
-	issueComm("Voilà un commentaire pour une valeur étrange.") ///
-	issueLocIDs(membres__id) ///
-	issueVar(s02q07)
-
 * no original members
-local noStillMember = "ERREUR: Aucun membre original du ménage. " + ///
-	"Confirmer que le ménage actuel ne contien aucun membre identifé" + ///
-	"lors de l'EHCVM."
+local noStillMember = "ERROR: No members were part of the original household. " + ///
+	"Confirm that the current household does not contain any original members " + ///
+	"from LFS."
 
 createComplexIssue , ///
 	attributesFile(`attributesPath') ///
@@ -259,5 +249,5 @@ createComplexIssue , ///
 	whichAttributes(num_still_members result_complete) ///
 	issueCondit(result_complete == 1 & num_still_members == 0) ///
 	issueType(1) ///
-	issueDesc("Aucun membre original") ///
+	issueDesc("No original member") ///
 	issueComm("noStillMember")

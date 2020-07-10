@@ -87,12 +87,7 @@ attempt_id_sym <- sym(paste0(attempt_id_str))
 ```{r get_staff_list, eval = TRUE, include = FALSE}
 
 # interviewers to exclude
-ints_to_exclude <- c(
-    "Dio26_RRA59",  # this appears in report 
-    "Fat57_ARE33",  # this appears in report 
-    "Alf47_interv", 
-    "Mam89_interv"
-)
+# ints_to_exclude <- c()
 
 # determine responsibility for each interview: interviewer and supervisor
 # get supervisor list from server
@@ -105,7 +100,7 @@ interviewers <- purrr::map2_dfr(.x = supervisors$supervisorId, .y = supervisors$
 	site = params$site, user = params$user, password = params$password) %>%
     rename_at(.vars = vars(IsLocked, CreationDate, DeviceId), .funs = ~ paste0("int_", .)) %>%
     filter(int_IsLocked == FALSE) %>%
-    filter(!(interviewer %in% ints_to_exclude))
+    {if(exists("ints_to_exclude")) filter(., !(interviewer %in% ints_to_exclude)) else .}    
 	
 ```
 
@@ -177,7 +172,7 @@ interviews_metadata <- interviewerResponsible(
 
 ```
 
-# Taux de réponse
+# Response rate
 
 ```{r response_rate}
 
@@ -191,21 +186,21 @@ createResponseRateTable(
     groupVar = "interviewer", 	
     responseRate = hasResult1 /
         (hasResult1 + hasResult2 + hasResult3 + hasResult4 + hasResult5 + hasResult6 + hasResult7 + hasResult8 + hasResult9),
-    title = "Taux de réponse", 
-    subtitle = "Pourcentage par résultat de l'entretien et par enquêteur", 	
-    totalNumTxt = "Nombre total",
-    responseRateTxt = "Taux de réponse",
-    groupText = "Enquêteur", 
-    overallTxt = "Tous les enquêteurs",
-    thresholdNote = "Le taux de réponse visé est de 80 pourcent.", 
+    title = "Response rate", 
+    subtitle = "Percent by interview result and by interviewer", 	
+    totalNumTxt = "Total number",
+    responseRateTxt = "Response rate",
+    groupText = "Interviewer", 
+    overallTxt = "All interviewers",
+    thresholdNote = "Target response rate is 80 percent.", 
     threshold = 0.80, 
-    respRateNote = "Taux de réponse = (1)/[(1)+(2)+(3)+(4)+(5)+(6)+(7)+(8)+(9)]*100",
+    respRateNote = "Response rate = (1)/[(1)+(2)+(3)+(4)+(5)+(6)+(7)+(8)+(9)]*100",
     tableColor = tableColor
 )
 
 ```
 
-# Taux de tentatives
+# Attempt rate
 
 ```{r attempt_rate}
 # Labels:
@@ -264,25 +259,25 @@ attempts_attribs <- interviewers %>% # all interviewers and supervisors
 attempts_stats <- compute_attempt_stats(
     df = attempts_attribs, 
     group_var = interviewer, 
-    overall_txt = "Tous les enquêteurs")
+    overall_txt = "All interviewers")
 
 attempts_stats %>% 
 gt(rowname_col = "interviewer") %>% 
-tab_header(title = "Taux de tentative de prise de contact par enquêteur") %>%
+tab_header(title = "Contact attempts by interviewer") %>%
 cols_label(
-    num_assigned = html("Affecté<br>(N)"), 
-    perc_attempted = html("Tenté<br>(%)"), 
-    perc_no_attempted = html("Pas tenté<br>(%)")) %>% 
+    num_assigned = html("Assigned<br>(N)"), 
+    perc_attempted = html("Attempted<br>(%)"), 
+    perc_no_attempted = html("Not attempted<br>(%)")) %>% 
 fmt_number(
     columns = starts_with("perc"), 
     scale_by = 100) %>%
 fmt_missing(columns = everything()) %>%
 tab_footnote(
-    footnote = "Affectations qui soint soit pas entamées soit pas entamées mais pays synchronisées.", 
+    footnote = "Assignments that are either not started or started but not synched.", 
     locations = cells_column_labels(
         columns = vars(perc_no_attempted))) %>%
 tab_footnote(
-    footnote = "Affectations reçues sur la tablette",
+    footnote = "Assignments received on the tablet only",
     locations = cells_column_labels(
         columns = vars(num_assigned)
 )) %>%
@@ -292,7 +287,7 @@ tab_options(
 
 ```
 
-# Taux de prise de contact
+# Contact rate
 
 ```{r contact_rate}
 
@@ -330,23 +325,23 @@ contact_stats <- attempts_attribs %>% # assignments_w_interviews %>%
 # output a table
 contact_stats %>%
 gt(rowname_col = "interviewer") %>%
-tab_header(title = "Taux de prise de contact par enquêteur") %>%
+tab_header(title = "Contact rate by interviewer") %>%
 cols_label(
-    num_attempts = html("Tenté<br>(N)"),
-    perc_reached = html("Joint<br>(%)"),
-    perc_not_reached = html("Pas joint<br>(%)"),
-    perc_unreachable = html("Injoignable<br>(%)")
+    num_attempts = html("Attempted<br>(N)"),
+    perc_reached = html("Reached<br>(%)"),
+    perc_not_reached = html("Not reached<br>(%)"),
+    perc_unreachable = html("Unreachable<br>(%)")
 ) %>%
 tab_footnote(
-    footnote = "Au moins une tentative a aboutit à la prise de contact",
+    footnote = "Any attempt resulted in successful contact",
     locations = cells_column_labels(columns = vars(perc_reached))
 ) %>%
 tab_footnote(
-    footnote = "Au moins une tentative a aboutit à un non-contact indicant la possibilité de continuer les tentatives de prises de contact",
+    footnote = "Any attempt resulted in non-contact that may indicate possibility of continued contact attempts",
     locations = cells_column_labels(columns = vars(perc_not_reached))
 ) %>%
 tab_footnote(
-    footnote = "Toutes les tentatives ont aboutit à un non-contact où il est possible de poursuivre.",
+    footnote = "All attempts resulted in non-contact outcome where no further contacts can be profitably made.",
     locations = cells_column_labels(columns = vars(perc_unreachable))
 ) %>%
 fmt_missing(
@@ -362,7 +357,7 @@ tab_options(
 
 ```
 
-# Taux de "conversion"
+# Conversion rate
 
 ```{r conversion_rate}
 
@@ -381,15 +376,15 @@ conversion_stats <- compute_conversion_stats(
     attempt_df = attempts_attribs, 
     conversion_df = conversion_summary,
 	group_var = interviewer,
-    overall_txt = "Toutes les enquêteurs")
+    overall_txt = "All interviewers")
 
 conversion_stats %>%
 gt(rowname_col = "interviewer") %>%
-tab_header(title = "Taux de conversion par enquêteur") %>%
+tab_header(title = "Conversion rate by interviewer") %>%
 cols_label(
-    num_reached = html("Joint<br>(N)"),
-    perc_agreed = html("Participé<br>(%)"),
-    perc_refused = html("Refusé<br>(%)")
+    num_reached = html("Reached<br>(N)"),
+    perc_agreed = html("Agreed<br>(%)"),
+    perc_refused = html("Refused<br>(%)")
 ) %>%
 fmt_number(
     columns = starts_with("perc_"),
@@ -399,7 +394,7 @@ fmt_missing(
     columns = everything()
 ) %>%
 tab_footnote(
-    footnote = "Comprend les cas de consentement de participer soit maintenant soit à une autre moment", 
+    footnote = "Includes agreement to participate either now or a time proposed by the respondent", 
     locations = cells_column_labels(
         columns = vars(perc_agreed))) %>%
 tab_options(
@@ -408,7 +403,7 @@ tab_options(
 
 ```
 
-# Durée de l'entretien
+# Interview length
 
 ```{r interview_length}
 
@@ -435,22 +430,22 @@ length_stats <- compute_length_stats(
     interviewers_df = interviewers, 
     length_df = interview_length, 
     group_var = interviewer, 
-    overall_txt = "Tous les enquêteurs")
+    overall_txt = "All interviewers")
 
 length_stats %>%
 gt(rowname_col = "interviewer") %>%
-tab_header(title = "Durée d'entrien achevé par enquêteur") %>%
+tab_header(title = "Length of completed interviews by interviewer") %>%
 cols_label(
-    num_obs = html("Entretiens<br>(N)"),
+    num_obs = html("Interviews<br>(N)"),
     minimum = "Min",
     lower_hinge = "Q1",
-    median = "Méd",
+    median = "Med",
     upper_hinge = "Q3",
     maximum = "Max"
 ) %>% 
 tab_spanner(
     columns = vars(minimum, lower_hinge, median, upper_hinge, maximum),
-    label = "Durée"
+    label = "Length"
 ) %>%
 fmt_number(
     columns = vars(minimum, lower_hinge, median, upper_hinge, maximum),
@@ -466,9 +461,9 @@ tab_options(
 
 ```
 
-# Tentative par temps
+# Attempts by time
 
-## Jour de la semaine
+## Day of week
 
 ```{r attempt_timing}
 
@@ -525,7 +520,7 @@ attempt_time_stats_overall <- full_join(
         true = ./num_attempts,
         false = NA_real_,
         missing = NA_real_)) %>%
-    mutate(interviewer = "Tous les enquêteurs")
+    mutate(interviewer = "All interviewers")
 
 attempt_time_stats <- rbind(attempt_time_stats_by_interviewer, attempt_time_stats_overall)
 
@@ -537,17 +532,17 @@ select(attempt_time_stats, interviewer, num_attempts, starts_with("day_")) %>%
 gt(rowname_col = "interviewer") %>%
 cols_label(
     num_attempts = html("Attempts<br>(N)"),
-    day_mon = "lun.",
-    day_tues = "mar.",
-    day_wed = "mer",
-    day_thurs = "jeu.",
-    day_fri = "ven.",
-    day_sat = "sam.",
-    day_sun = "dim."
+    day_mon = "Mon.",
+    day_tues = "Tues.",
+    day_wed = "Wed.",
+    day_thurs = "Thurs.",
+    day_fri = "Fri.",
+    day_sat = "Sat.",
+    day_sun = "Sun."
 ) %>%
 tab_spanner(
     columns = starts_with("day_"),
-    label = "Jour de la semaine (%)"
+    label = "Day of the week (%)"
 ) %>%
 fmt_number(
     columns = starts_with("day_"),
@@ -562,26 +557,26 @@ tab_options(
 
 ```
 
-## Heure de la journée
+## Time of day
 
 ```{r attempt_hour_of_day}
 
 select(attempt_time_stats, interviewer, num_attempts, starts_with("time_")) %>%
 gt(rowname_col = "interviewer") %>%
 cols_label(
-    num_attempts = html("Tentatives<br>(N)"),
-    time_8minus = "< 8h",
-    time_8_10 = "8-10h",
-    time_10_12 = "10-12h",
-    time_12_14 = "12-14h",
-    time_14_16 = "14-16h",
-    time_16_18 = "16-18h",
+    num_attempts = html("Attempts<br>(N)"),
+    time_8minus = "< 8",
+    time_8_10 = "8-10",
+    time_10_12 = "10-12",
+    time_12_14 = "12-14",
+    time_14_16 = "14-6",
+    time_16_18 = "16-18",
     time_18_20 = "18-20",
-    time_20plus = "> 20h"
+    time_20plus = "> 20"
 ) %>%
 tab_spanner(
     columns = starts_with("time_"),
-    label = "Heure de la journée (%)"
+    label = "Time of day (%)"
 ) %>%
 fmt_number(
     columns = starts_with("time_"),
@@ -596,7 +591,7 @@ tab_options(
 
 ```
 
-# Contacts par le temps
+# Contacts by time
 
 ```{r contact_timing}
 
@@ -661,36 +656,36 @@ contact_time_stats_overall <- full_join(
         true = ./num_contacts,
         false = NA_real_,
         missing = NA_real_)) %>%
-    mutate(interviewer = "Tous les enquêteurs")
+    mutate(interviewer = "All interviewers")
 
 contact_time_stats <- rbind(contact_time_stats_by_interviewer, contact_time_stats_overall)
 
 ```
 
-## Jour de la semaine
+## Day of the week
 
 ```{r contact_day_of_week} 
 
 select(contact_time_stats, interviewer, num_attempts, num_contacts, starts_with("day_")) %>%
 gt(rowname_col = "interviewer") %>%
 cols_label(
-    num_attempts = "Tentatives",
+    num_attempts = "Attempts",
     num_contacts = "Contacts",
-    day_mon = "lun.",
-    day_tues = "mar.",
-    day_wed = "mer.",
-    day_thurs = "jeu.",
-    day_fri = "ven.",
-    day_sat = "sam.",
-    day_sun = "dim."
+    day_mon = "Mon.",
+    day_tues = "Tues.",
+    day_wed = "Wed.",
+    day_thurs = "Thurs.",
+    day_fri = "Fri.",
+    day_sat = "Sat.",
+    day_sun = "Sun."
 ) %>%
 tab_spanner(
     columns = starts_with("num_"),
-    label = "Tentatives de contact (N)"
+    label = "Contact attempts (N)"
 ) %>%
 tab_spanner(
     columns = starts_with("day_"),
-    label = "Jour de la semaine (%)"
+    label = "Day of the week (%)"
 ) %>%
 fmt_number(
     columns = starts_with("day_"),
@@ -705,31 +700,31 @@ tab_options(
 
 ```
 
-## Heure de la journée
+## Time of day
 
 ```{r contact_hour_of_day} 
 
 select(contact_time_stats, interviewer, num_attempts, num_contacts, starts_with("time_")) %>%
 gt(rowname_col = "interviewer") %>%
 cols_label(
-    num_attempts = "Tentatives",
+    num_attempts = "Attempts",
     num_contacts = "Contacts",
-    time_8minus = "< 8h",
-    time_8_10 = "8-10h",
-    time_10_12 = "10-12h",
-    time_12_14 = "12-14h",
-    time_14_16 = "14-16h",
-    time_16_18 = "16-18h",
+    time_8minus = "< 8",
+    time_8_10 = "8-10",
+    time_10_12 = "10-12",
+    time_12_14 = "12-14",
+    time_14_16 = "14-16",
+    time_16_18 = "16-18",
     time_18_20 = "18-20",
-    time_20plus = "> 20h"
+    time_20plus = "> 20"
 ) %>%
 tab_spanner(
     columns = starts_with("num_"),
-    label = "Tentatives de contact (N)"
+    label = "Contact attempts (N)"
 ) %>%
 tab_spanner(
     columns = starts_with("time_"),
-    label = "Heure de la journée (%)"
+    label = "Time of day (%)"
 ) %>%
 fmt_number(
     columns = starts_with("time_"),
@@ -744,7 +739,7 @@ tab_options(
 
 ```
 
-# Affectations toujours en cours
+# Outstanding assignments
 
 ```{r pending_assignments}
 
@@ -821,9 +816,9 @@ outstanding_work_stats <-
 outstanding_work_stats %>%
 gt(rowname_col = "interviewer") %>%
 cols_label(
-    days = "Jours depuis la dernière sync",
-    num_sent = html("Envoyé"),
-    num_received = html("Sur la tablette"),
+    days = "Days since last sync",
+    num_sent = html("Sent"),
+    num_received = html("On tablet"),
     num_days_4minus = "<= 4",
     num_days_5 = "5",
     num_days_6 = "6",
@@ -832,18 +827,18 @@ cols_label(
 ) %>%
 tab_spanner(
     columns = vars(num_sent, num_received),
-    label = "Affectations totales"
+    label = "Total assignments"
 ) %>%
 tab_spanner(
     columns = starts_with("num_days"),
-    label = "Par jour sans envoi"
+    label = "By days outstanding"
 ) %>%
 fmt_missing(
     columns = everything()
 ) %>%
 fmt_missing(
     columns = vars(days),
-    missing_text = "Jamais"
+    missing_text = "Never"
 ) %>%
 tab_style(
     style = list(
@@ -877,7 +872,7 @@ tab_options(
 
 ```
 
-# Entretiens achevé dans le temps
+# Interviews completed over time
 
 ```{r interivews_completed}
 
