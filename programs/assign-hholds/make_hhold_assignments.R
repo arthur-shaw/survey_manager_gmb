@@ -86,7 +86,12 @@ hholds_sampled <- haven::read_dta(file = paste0(assign_data_dir, sample_preload_
     ) %>%
     select(hhid)
 
-# split file into hhold and member pieces
+# split LFS datafile into hhold and member pieces
+data <- haven::read_dta(file = paste0(assign_data_dir, hhold_preload_file)) %>%
+    mutate(hhid = paste0(
+        str_pad(hh1, width = 3, side = "left", pad = "0"),
+        str_pad(hh2, width = 2, side = "left", pad = "0"))
+    )
 # ... hhold file
 hholds <- data %>%
     mutate(
@@ -105,6 +110,10 @@ hholds <- data %>%
         hh5_1_2 = hh5_1
     ) %>%
     filter(hl3 == 1) %>%
+    mutate_at(
+        .vars = vars(hh5_2_1, hh5_2_2),
+        .funs = as.character
+    ) %>%
     select(
         hhid, hh7, hh8, hh1, hh2,   # hhold identifiers: area, LGA, cluster, household number
         hh5_1, hh5_2_1, hh5_2_2,    # contacts: head name and phone contacts
@@ -125,7 +134,7 @@ members <- data %>%
     )
 
 # compute household size
-hhold_size <- members
+hhold_size <- members %>%
     group_by(hhid) %>%
     summarize(hhsize = n()) %>%
     ungroup() %>%
@@ -156,20 +165,20 @@ if (file.exists(paste0(assign_temp_dir, "old_assignments.dta"))) {
 
 # interviewer attributes
 interviewer_attributes <- readxl::read_excel(
-        path = paste0(assign_data_dir, "agents_langue.xlsx"), 
-        n_max = 18
+        path = paste0(assign_data_dir, "interviewer_languages.xlsx"), 
+        n_max = 16
     ) %>%
     pivot_longer(
-        cols = starts_with("s00q28"), 
-        names_to = "langue", 
-        values_to = "s00q28",
+        cols = starts_with("language"), 
+        names_to = "lang", 
+        values_to = "language",
         values_drop_na = TRUE) %>%
     mutate(
-        s00q28 = str_extract(langue, "(?<=s00q28_)[0-9]+(?= )"),
-        s00q28 = as.numeric(s00q28), 
+        language = str_extract(lang, "(?<=language_)[0-9]+(?= )"),
+        language = as.numeric(language), 
         interviewer = login
         ) %>%
-    select(interviewer, s00q28)    
+    select(interviewer, language)    
 
 # =============================================================================
 # Make random assignments
@@ -242,7 +251,7 @@ create_preload(
     hh_name_vars = vars(hh5_1, hh5_1_2),
     number_mutate = mutates,
     num_group_mutate = num_group_mutates,
-    number_type_var = numero_membre,
+    number_type_var = number_member,
     number_var = number_list,
     name_mutate = mutates,
     number_name_var = number_owner_txt,
@@ -250,14 +259,14 @@ create_preload(
     mem_indiv_id = uid,
     mem_mutate = quos(
         preload_pid = uid, 
-        s02q01_open = hl2, 
+        s2q1_open = hl2, 
         preload_sex = hl4, 
         preload_age = hl6, 
         preload_relation = hl3,
-        s02q07 = hl3,    # relationship to head
-        s02q06 = hl6,  # age
-        s02q05 = hl4,    # gender
-        s02q01 = hl2),  # name
+        s2q7 = hl3,    # relationship to head
+        s2q6 = hl6,  # age
+        s2q5 = hl4,    # gender
+        s2q1 = hl2),  # name
     mem_name = s2q1,
     df_assignments = new_assignments, 
     assign_rename = c(
