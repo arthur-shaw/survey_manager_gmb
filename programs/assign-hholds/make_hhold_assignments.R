@@ -106,8 +106,25 @@ hholds <- data %>%
             hl11 == 8 ~ 8, # Manjako -> MANJAGO
             hl11 == 9 ~ 10, # Bambara -> BAMBARA
             hl11 == 96 ~ 1), # Other -> ENGLISH (FOR NOW)
-        dteasg = format(Sys.Date(), "%b-%m"),
-        hh5_1_2 = hh5_1
+        language = case_when(
+            is.na(hl11) & hl10 == 2 ~ 3, # if Senegalese, Wollof
+            is.na(hl11) & hl10 == 3 ~ 1, # if Nigerian, English
+            is.na(hl11) & hl10 == 4 ~ 1, # if Sierra Leonean, English
+            is.na(hl11) & hl10 == 5 ~ 1, # if Sierra Leonean, English
+            is.na(hl11) & hl10 == 6 ~ 1, # if Ghanaian, English
+            is.na(hl11) & hl10 == 7 ~ 4, # if Guinean, Fula (largest language)
+            is.na(hl11) & hl10 == 8 ~ 1, # if Bissau Guinean, English (for lack of dominant lang)
+            is.na(hl11) & hl10 == 9 ~ 1, # if Mauritanian, English
+            is.na(hl11) & hl10 == 10 ~ 1, # if other West African, English
+            is.na(hl11) & hl10 == 11 ~ 1, # if other African, English
+            is.na(hl11) & hl10 == 12 ~ 1, # if non-African, English
+            is.na(hl11) & is.na(hl10) ~ 1, # if no nationality or ethnicity, English
+            !is.na(hl11) ~ language
+        ),
+        language = if_else(language == 10, 1, language), # recode Bambara to English, for lack of interviewer who speaks language
+        dteasg = format(Sys.Date(), "%d-%b"),
+        hh5_1_2 = hh5_1,
+        has_hh_contacts = (!is.na(hh5_2_1) | !is.na(hh5_2_2)) # for allocate function, even though all in GMB have hhold contacts
     ) %>%
     filter(hl3 == 1) %>%
     mutate_at(
@@ -118,7 +135,7 @@ hholds <- data %>%
         hhid, hh7, hh8, hh1, hh2,   # hhold identifiers: area, LGA, cluster, household number
         hh5_1, hh5_2_1, hh5_2_2,    # contacts: head name and phone contacts
         hh5_1_2,                    # duplicate head name
-        dteasg, language
+        dteasg, language, has_hh_contacts
         # strata - TODO: create        
     )
 
@@ -152,7 +169,7 @@ if (file.exists(paste0(assign_temp_dir, "old_assignments.dta"))) {
     old_assignments <- haven::read_dta(file = paste0(assign_temp_dir, "old_assignments.dta"))
 } else {
     old_assignments <- tibble(
-        !!sym(hhold_preload_id) := NA_real_,
+        !!sym(hhold_preload_id) := NA_character_,
         `_responsible` = NA_character_,
         `_record_audio` = NA_real_,
         .rows = 0
@@ -185,7 +202,7 @@ interviewer_attributes <- readxl::read_excel(
 # =============================================================================
 
 new_assignments <- tibble(
-        !!sym(hhold_preload_id) := NA_real_,
+        !!sym(hhold_preload_id) := NA_character_,
         `_responsible` = NA_character_,
         `_record_audio` = NA_real_,
         .rows = 0
@@ -196,6 +213,9 @@ for (i in seq(from = 1, to = nrow(data_entered))) {
     interviewer_name <- data_entered$interviewer_name[[i]]
     num_to_assign <- data_entered$num_to_assign[[i]]
 
+    print(paste0("INTERVIEWER: ", interviewer_name))
+    print(paste0("TO ASSIGN: ", num_to_assign))
+
     hholds_assigned_to_int <- allocate(
         df_sample = hholds,
         df_attrib = interviewer_attributes,
@@ -205,7 +225,9 @@ for (i in seq(from = 1, to = nrow(data_entered))) {
         audio = TRUE,
         audio_interval = 5       
     )
-    
+
+    print(paste0("ROWS ASSIGNED: ", nrow(hholds_assigned_to_int)))
+
     new_assignments <- rbind(new_assignments, hholds_assigned_to_int)
     old_assignments <- rbind(old_assignments, hholds_assigned_to_int)
 

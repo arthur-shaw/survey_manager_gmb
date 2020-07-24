@@ -89,11 +89,11 @@ int_attributes <- filter(df_attrib, interviewer == interviewer_name)
 
 # determine which households are available (i.e., not already assigned)
 hholds_available <- df_sample %>%
-    select(hhid, hhsize, has_hh_contacts, s00q28) %>%
+    select(hhid, hhsize, has_hh_contacts, language) %>%
     anti_join(df_assigned, by = "hhid")
 
 # determine which households are eligible for selection (I.e., available and have same attributes as interviewer)
-hholds_eligible <- inner_join(hholds_available, int_attributes, by = "s00q28") %>%
+hholds_eligible <- inner_join(hholds_available, int_attributes, by = "language") %>%
     # implicitly stratify by expected difficulty
     # sort by hhold size, lack of direct hhold number
     arrange(hhsize, has_hh_contacts)
