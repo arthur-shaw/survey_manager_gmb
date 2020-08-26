@@ -187,7 +187,7 @@ ui <- tagList(
 			icon = icon("file-download"),
 			h2("Team composition"),
 			actionButton("get_teams_data", label = "Download", icon = icon("users")),
-			h2("Ménage"),
+			h2("Household"),
 			actionButton("get_hhold_data", label = "Download", icon = icon("home")),
 			actionButton("check_hhold_data", label = "Check file dates", icon = icon("check-square")),
 			actionButton("use_hhold_data", label = "Use these data", icon = icon("play-circle")),
