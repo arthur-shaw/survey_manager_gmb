@@ -70,7 +70,7 @@ writeToDisk <- function(path, content) {
 
 dl_wait_screen <- tagList(
 	spin_wave(), 
-	h4("Downloading in progress...")
+	h4("Download in progress...")
 )
 
 dl_alt_wait_screen <- tagList(
@@ -95,7 +95,7 @@ ui <- tagList(
 
 	navbarPage(title = "Survey manager",
 		tabPanel(
-			title = "Configurer", 
+			title = "Setup", 
 			value = "setup_tab",
 			icon = icon("cog"),
 				fluidPage(
@@ -163,7 +163,7 @@ ui <- tagList(
 						selectInput(inputId = "suso_status", label = "Status(es) of interview to process", 
 							choices = c("Completed", "ApprovedBySupervisor"), 
 							selected = c("Completed", "ApprovedBySupervisor"), multiple = TRUE, selectize = TRUE),
-						h3("Statut indiqué par l'entretien"),
+						h3("Data-driven status"),
 						textInput(inputId = "data_status", label = "Stata condition describing interviews to process", 
 							"inlist(result, 1, 2, 5, 6, 7)"),
 
@@ -233,7 +233,7 @@ ui <- tagList(
 						selected = "All teams",
 						multiple = TRUE,
 						selectize = TRUE),
-					h2("Créer rapport"),
+					h2("Create report"),
 					actionButton("make_fieldcheck_report", label = "Create", icon = icon("table"))
 				),
 				conditionalPanel(condition = "output.got_teams == 2",
