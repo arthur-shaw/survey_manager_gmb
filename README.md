@@ -1,205 +1,202 @@
-# Survol
+# Overview
 
-<img src="documentation/les actions.PNG">
+<img src="assets/actions.PNG">
 
-Une application qui facilite les tâches de gestion d'enquête:
+An app to facilitate survey management actions:
 
-- Affectation d'entretiens avec informations préchargées
-- Téléchargement des données
-- Création de rapport de suivi
+- Assign interviews with preloaded information
+- Download data
+- Create monitoring reports
 
-Affecter            |  Télécharger | Surveiller   
+Assign            |  Download | Monitor   
 :--------------:|:-----------:|:-------------------------:
-![](documentation/affecter.PNG)  | ![](documentation/télécharger.PNG) | ![](documentation/surveiller.PNG)
+![](assets/affecter.PNG)  | ![](assets/download.PNG) | ![](assets/monitor.PNG)
 
 
-#  Table des matières:
+#  Table of contents:
 
 - [Installation](#installation)
-- [Utilisation](#utilisation)
-    - [Affecter des entretiens](#affecter-des-entretiens)
-    - [Télécharger les données](#télécharger-les-données)
-    - [Approuver/rejeter](#approuverrejeter)
-    - [Surveiller](#surveiller)
+- [Usage](#usage)
+    - [Assign interviews](#assign-interviews)
+    - [Download data](#download-data)
+    - [Approve/reject](#approvereject)
+    - [Monitor](#monitor)
 
 # Installation
 
-Veuillez suivre les étapes suivantes, même si vous avez déjà une installation de R de RStudio sur votre machine:
+Please follow these steps, even if you already have an installation of R or RStudio on your machine:
 
-- [Télécharger ce répositoire](#télécharger-ce-répositoire)
-- [Installer R](#installer-r)
-- [Installer RStudio](#installer-rstudio)
+- [Download repo](#download-repo)
+- [Install R](#install-r)
+- [Install RStudio](#install-rstudio)
 
-## Télécharger ce répositoire
+## Download repo
 
-- Cliquer sur le bouton `Clone or download`
-- Cliquer sur l'option `Download ZIP`
-- Télécharger dans le dossier sur votre machine où vous voulez héberger ce projet
+- Click the `Clone or download` button
+- Click on the `Download ZIP` option
+- Download the repo in the folder on your computer where you would like to store the project
 
-## Installer R
+## Install R
 
-- Suivre [ce lien](https://cran.rstudio.com/)
-- Cliquer sur le lien approprié pour votre système d'exploitation
-- Cliquer sur `base`
-- Télécharger et installer
+- Follow [this link](https://cran.rstudio.com/)
+- Click on the appropriate link for your operating system
+- Click on `base`
+- Download and install
 
-## Installer RStudio
+## Install RStudio
 
-- Suivre [ce lien](https://www.rstudio.com/products/rstudio/download/)
-- Sélectionner RStudio Desktop Open Source License
-- Cliquer sur le lien approprié pour votre système d'exploitation
-- Télécharger et installer
+- Follow [this link](https://www.rstudio.com/products/rstudio/download/)
+- Choose RStudio Desktop Open Source License
+- Click on the appropriate link for your operating system
+- Download and install
 
-# Configuration
+# Setup
 
-## Mettre en place les fichiers requis
+## Provide the required data files
 
-Copier les fichiers requis dans le répertoire suivant: `/survey-manager/programs/assign-hholds/data/`
+Put the required files in the following folder: `/survey-manager/programs/assign-hholds/data/`
 
-Confirmer que les bases avec un identifiant ménage ont le même identifiant avec le même nom dans chaque base de sorte à permettre la fusion.
+Confirm that the files with a household ID have the same ID with the same name in all files, so that simple merging is possible.
 
-L'application a besoin des bases suivantes :
+The app needs the following files :
 
-- **Échantillon.** Consiste des ménages sélectionnés. Besoin d'une seule variable: l'identifiant ménage. Ne pas inclure les ménages non-sélectionnés.
-- **Ménage.** Consiste des attributs à précharger au niveau ménage. Au minimum, contient l'identifiant ménage, les contacts téléphonique, l'interlocuteur pour chaque contact, la langue de l'entretien, et une la strate. Pour l'EHCVM, correspond à la base `s00_me_[PAYS][ANNEE].dta`. Pour la variable strate, il faut l'ajouter à la base EHCVM pour faciliter le pré-chargement.
-- **Membres du ménage.** Consiste des infos à précharger au niveau des membres du ménage. Au minimum, contient, l'identifiant ménage, l'identifiant membre, et le nom du membre. Pour l'EHCVM, correspond à la base `s01_me_[PAYS][ANNEE].dta`.
-- **Enquêteurs et des langues parlées.** Contient une liste des enquêteurs en une colonne et les langues parlées en plusieurs colonnes. La colonne des enquêteurs doit s'appeller `login` et contenir le login du compte d'enquêteur. Les colonnes de langues doivent suivre ce format: `s00q28_[valeur] (Nom de la langue)`, où `[valeur]` correspond à la valeur dans la variable de la langue d'interview dans la base ménage (i.e., `s00q28` dans l'EHCVM). Les cellules doivent contenir un `1`, un `0`, ou un vide. Voir un exemple du Mali ici-bas:
+- **Sample.** Consists of the households selected for the survey sample. Needs only one variable: the household ID. Do not include non-selected households in the data file.
+- **Household.** Consists of household attributes to preload. At a minimum, contains the household ID, phone contacts, names of those contacts, and the language of the interview. 
+- **Members.** Consists of information to preload about household members. At a minimum, contains the household ID, the member ID, and the member name.
+- **Interviewers and languages spoken.** Contains a list of interviewers in one column, and the languages spoken in several columns. The interviewer column should be called `login` and contain the interviewer's account name. The languages spoken columns should follow this format: `[language_var]_[value] (Name of language spoken)`, where `[language_var]` matches the interview language variable in the household file and `[valeur]` corresponds the the language's code value. Cells must contain a `1`, a `0`, or a blank. See an example from Mali below:
 
-<img src="documentation/enquêteurs et langues parlées.PNG">
+<img src="assets/enquêteurs et langues parlées.PNG">
 
-## Configurer par l'application
+## In-app setup
 
-- Ouvrir RStudio
-- Ouvrir `survey_manager.R` par le menu `File > Open File`
-- Lancer l'appli en cliquant sur le bouton `Run app`
+- Open RStudio
+- Open `survey_manager.R` via `File > Open File` in the RStudio menu
+- Launch the app by clicking on the `Run app` button
 
-<img src="documentation/lancer l'appli R.PNG">
+<img src="assets/lancer l'appli R.PNG">
 
-Ensuite, indiquer ne pas détenir un fichier de configuration afin de pouvoir renseigner les paramètres requis
+Then, indicate not having a setup file in order to fill in the required parameters.
 
-<img src="documentation/configuration.PNG">
+<img src="assets/setup.PNG">
 
-Les sections suivantes donnent des indications de la nature des valeurs recherchées ou de comment les renseigner.
+The following sections give an idea of what values are sought or how to provide them.
 
-### Dossier du projet
+### Project folder
 
-Pour que l'application marche, il faut qu'elle sache se localiser sur votre machine. Indiquer la localisation en choissisant le dossier `survey_manager` dans l'interface suivante. Le panneau de gauche indique les répertoires. Le panneau de droite indique le contenu du répertoire sélectionné.
+For the application to work, it needs to know its location on your device. Indicate the location by choosing the `survey_manager` folder in the interface below. The lefthand pannel shows folders. The righthand panel shows the contents of the selected folder.
 
-<img src="documentation/sélectionner le dossier.PNG">
+<img src="assets/select project folder.PNG">
 
+### Stata details
 
-### Détails de Stata
+For the application to use Stata for certain tasks--for example, merging Stata files--it needs to know where the Stata executable is located on your machine.
 
-Pour que l'application puisse se servir de Stata pour certaines tâches--par exemple, la fusion de bases Stata--il faut qu'elle sache où trouver l'installation Stata sur votre machine. Pour ce faire, retrouver le fichier exécutable de Stata avec l'interface suivante.
+To change drives, click on the drop-down list in the upper righthand corner of the interface.
 
-Pour changer de volumes, cliquer sur la liste déroulante en haut et à droite de l'interface
+<img src="assets/select Stata executable.PNG">
 
-<img src="documentation/sélectionner exécutable Stata.PNG">
+### SuSo server details
 
-### Détails du serveur SuSo
+#### Credentials
 
-#### Identifiants de connexion
+To allow the application to access your server, provide:
 
-Pour permettre l'appli d'accèder à votre serveur afin d'accomplir certaines actions, reseigner:
-
-- **Site.** Pour un serveur à l'adresse https://demo.mysurvey.solutions, il s'agit de `demo`.
-- **Login, mot de passe.** Renseigner le login et mot de passe d'un utilisateur API. Si un utilisateur API n'existe pas déjà, se connecter au serveur en tant qu'admin pour en créer un.
+- **Site.** Provide the server prefix. For a server with the address `https://demo.mysurvey.solutions`, the desired value would be `demo`.
+- **User name, password.** Provide the user name and password for an API user. If an API user does not exist already, connect to the server as admin and create one.
 
 #### Questionnaires
 
-Pour télécharger les données de certains masques, renseigner le nom--ou une expression régulière--permettant de les identifier. Pour les cas simples, il pourrait s'agir simplement du nom du masque. Pour des cas moins simples, il pourrait s'agir d'un sous-texte qui identifie plusieurs masques du même type.
+To download data, the app needs a name or a regular expression to identify it. For simple cases, this could simply be the title of the CATI questionnaire. For less simple cases, this could be a sub-text that identifies several versions of the same questionnaire.
 
-Il est prévu d'avoir trois bases, chacune provenant d'une application séparée:
+The app expects two questionnaires:
 
-- **Ménage.** Application CATI administrée aux ménages.
-- **Entretien de rappel.** Application facultative pour réaliser des vérifications auprès des ménages déclarés comme étant enquêtés. Même si elle n'existe pas, il faut renseigner un texte quelconque.
-- **Entretien de répondant secret.** Application facultative pour réaliser des entretiens avec de faux répondants afin d'observer la manière dont l'enquêteur fait ses entretiens. Même si elle n'existe pas, il faut renseigner un texte quelconque.
+- **Household.** CATI application for interviewing households. This is the main questionnaire.
+- **Call-back.** Optional CATI application for calling back a sub-sample of households. Even if it does not exist, one must write something in this field.
 
-### Détails sur les fichiers de préchargement
+### Preload data details
 
-Pour les [fichiers impliqués dans le préchargement](#mettre-en-place-les-fichiers-requis), il faut donner le nom--avec extension--donner leur nom et, par moment, des informations concernant certaines variables clé.
+For the [files involved in preloading](#provide-the-required-data-files), one needs to give the file name--with file extension--and the names of key variables.
 
-### Détails sur les données exportées
+### Designer questionanire details
 
-Pour que certains composants de l'application--notamment, les rapports et le rejet--sachent quelles bases utiliser, il faut en indiquer les noms. Pour l'EHCVM, les valeurs sont pré-remplies.
+For certain components of the application--in particular, reports and rejection--to know the names of rosters and key variables, provide them here. The questionnaire ID, roster ID, and variables names should be provided as they appear in SuSo Designer.
 
-### Détails sur le programme de rejet
+### Review/rejection details
 
-Pour que l'application sache quels entretiens traîter pour le rejet, il faut identifier les entretiens achevés par deux moyens complémentaires:
+For the application to know which interviews to review, one must identify completed interviews by two complementary means:
 
-- Statut(s) dans Survey Solutions
-- Statut selon le bilan de l'entretien dans la base ménage
+- **Survey Solutions status.** Select the relevant status(es): Completed, or sent by the interviewer but not yet reviewed by the supervisor; ApprovedBySupervisor, or approved by the supervisor but not yet reviewed by HQ.
+- **Data-driven status.** Write Stata syntax that identifies completed interviews. The script must use variables in the main export file. The script field must be filled even if not relevant. If the data-driven status is not relevant, write a condition that is always true.
 
-Pour l'EHCVM, les valeurs de ce dernier sont pré-remplies.
+### Data collection period
 
-### Période de collecte
+Provide the anticipated start and end date of the current wave of data collection.
 
-Indiquer les dates de début et de fin de la vague de collecte en cours.
+### Save setup file
 
-### Sauvegarder
+Save the parameters. Once the button is pressed, the application will create a file named `setup_params.R` that captures parameters provided above and stores them for future use sessions.
 
-Sauvegarder les paramètres. Une fois le bouton appuyé, l'application va créer un fichier `setup_params.R` qui capte les informations fournies et les stocke pour les prochaines séances d'utilisation de l'application.
+# Usage
 
-# Utilisation
+## Setup
 
-## Configuration
+Load the `setup_params.R` file that stores survey parameters. If this file does not exist, see how to create it [here](#setup).
 
-Charger le fichier `setup_params.R` qui capte les paramètres de l'utilisateur. Si ce fichier n'existe pas voir comment le créer [ici](#configuration).
+<img src="assets/load parameters.PNG">
 
-<img src="documentation/charger_paramètres.PNG">
+## Assign interviews
 
-## Affecter des entretiens
+First, in order to have a list of interviewers, download the team composition under the `Download` tab.
 
-D'abord, afin d'avoir une liste des enquêteurs, télécharger la composition des équipes de collecte.
+<img src="assets/download.PNG">
 
-<img src="documentation/télécharger.PNG">
+Then, provide the number of interviews to assign to each desired inteviewer. In order to do this, type a number in the cell and press Enter. If Enter is not pressed, the value may not be stored.
 
-Puis, renseigner le nombre d'entretiens à affecter à chaque agent voulu. Pour ce faire, saisir un chiffre et appuyer sur la touche d'entrée.
+<img src="assets/affecter.PNG">
 
-<img src="documentation/affecter.PNG">
+Next, click on the `Make assignments` button.
 
-Ensuite, cliquer sur le bouton Créer affectations.
+Then, find the zip archive of assignments in the following folder: `/survey-manager/outputs/assign-hholds/`
 
-Puis, retrouver le fichier zip d'affectations dans le répertoire suivant: `/survey-manager/outputs/assign-hholds/`
+<img src="assets/fichiers de préchargement.PNG">
 
-<img src="documentation/fichiers de préchargement.PNG">
+Finally, upload the zip file on the server to make those assignments:
 
-Finalement, importer ce fichier zip sur le serveur:
+- Login into the server
+- Navigate to `Survey Setup > Questionnaires`
+- Click on the desired questionnaire
+- Choose `Upload assignments` from the drop-down menu
+- Provide a default interviewer for the assignments
+- Upload the zip file via the `UPLOAD .ZIP FILE` button in the righthand column
 
-- Se connecter au serveur
-- Naviguer vers `Confirguration de l'enquête`
-- Cliquer sur le masque voulu
-- Choisir `Importer des affectations` à partir de la liste déroulante
-- Indiquer un enquêteur de défaut pour l'affectation
-- Importer avec le bouton de droite sous la rubrique `Identifier et collecter des données (archive)`
+## Download data
 
-## Télécharger les données
+<img src="assets/download.PNG">
 
-<img src="documentation/télécharger.PNG">
+- Click on the button of the data to download
+- For household data, find combined data here: `/survey-manager/data/hhold/combined/`
+- For audio, find files here: `/survey-manager/data/audio/downloaded/`
 
-- Cliquer sur le bouton des données à télécharger
-- Pour la base ménage, retrouver les bases fusionnées ici: `/survey-manager/data/hhold/combined/`
-- Pour les enregistrements sonores, retrouver les fichiers ici: `/survey-manager/data/audio/downloaded/`
+## Approve/reject
 
-## Approuver/rejeter
+COMING SOON. DEFAULT REJECTION REASONS DEVELOPMENT UNDERWAY.
 
-A VENIR PROCHAINEMENT. MOTIFS DE REJET DE DEFAUT EN COURS D'ÉLABORATION
+## Monitor
 
-## Surveiller
 
-D'abord, afin d'avoir une liste des enquêteurs, télécharger la composition des équipes de collecte depuis l'onglet `Télécharger`.
+First, on the `Download` tab, download the team composition.
 
-Ensuite, indiquer la base ménage à utiliser:
+Then, still on the `Download` tab, indicate the household data to use:
 
-- **Base nouvellement téléchargée.** Cliquer sur Télécharger
-- **Base déjà téléchargée.** Cliquer sur Vérifier pour voir la date de dernière modification. Cliquer sur Utiliser pour utiliser ces bases
+- **Newly downloaded data.** Click on the `Download` button.
+- **Already downloaded data.** Click on `Check file dates` to see the dates of data. Click on `Use these data` to use them for the report.
 
-Puis, naviguer vers la création de rapports: `Agir > Surveiller`
+Next, navigate to the monitoring report screen: `Act > Monitor`.
 
-Ensuite, indiquer la période couverte par le rapport.
+Then, provide the period to be covered by the report.
 
-Puis, créer un rapport en cliquant sur le bouton `Créer` en bas d'écran
+Next, create the report by clicking on the `Create` button at the bottom of the screen.
 
-<img src="documentation/surveiller.PNG">
+<img src="assets/monitor.PNG">
 
-Finalement, retrouvé le rapport crée dans le répertoire suivant: `/survey-manager/outputs/monitoring-tables/`
+Finally, find the report in the following folder: `/survey-manager/outputs/monitoring-tables/`
