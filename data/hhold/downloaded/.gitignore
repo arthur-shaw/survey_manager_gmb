@@ -2,6 +2,7 @@
 *.zip
 *.dta
 
-# exclude text and PDF documentation
+# exclude text, PDF documentation, and JSON version of questionnaire
 *.txt
 *.pdf
+*.json
