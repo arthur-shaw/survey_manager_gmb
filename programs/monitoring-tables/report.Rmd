@@ -87,7 +87,7 @@ attempt_id_sym <- sym(paste0(attempt_id_str))
 ```{r get_staff_list, eval = TRUE, include = FALSE}
 
 # interviewers to exclude
-# ints_to_exclude <- c()
+ints_to_exclude <- c("LaminDibbaInter")
 
 # determine responsibility for each interview: interviewer and supervisor
 # get supervisor list from server
